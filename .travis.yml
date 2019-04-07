@@ -1,0 +1,25 @@
+language: julia
+os:
+  - linux
+  - osx
+julia:
+  - 0.7
+  - 1.0
+  - 1.1
+  - nightly
+notifications:
+  email: false
+branches:
+  only:
+  - master
+  - /release-.*/
+  - /v(\d+)\.(\d+)\.(\d+)/
+matrix:
+  allow_failures:
+  - julia: nightly
+before_script:
+  - if [[ `uname` = "Linux" ]]; then TESTCMD="xvfb-run julia"; else TESTCMD="julia"; fi
+script:
+  - $TESTCMD --color=yes -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("Electron"); Pkg.test("Electron", coverage=true)'
+after_success:
+  - julia -e 'using Pkg; cd(Pkg.dir("Electron")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
